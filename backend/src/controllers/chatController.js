@@ -5,7 +5,7 @@ export async function getStreamToken(req,res) {
         // use clerkId on stream not mongodb id => it should match the id e have in the stream dashboard
         const token = chatClient.createToken(req.user.clerkId)
 
-        req.status(200).json({
+        res.status(200).json({
             token,
             userId: req.user.clerkId,
             userName: req.user.name,
