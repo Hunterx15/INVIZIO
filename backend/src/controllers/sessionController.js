@@ -8,23 +8,14 @@ export async function createSession(req, res) {
     const clerkId = req.user.clerkId;
 
     if (!problem || !difficulty) {
-      return res
-        .status(400)
-        .json({ message: "Problem and difficulty are required" });
+      return res.status(400).json({ message: "Problem and difficulty are required" });
     }
 
     // generate a unique call id for stream video
-    const callId = `session_${Date.now()}_${Math.random()
-      .toString(36)
-      .substring(7)}`;
+    const callId = `session_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
     // create session in db
-    const session = await Session.create({
-      problem,
-      difficulty,
-      host: userId,
-      callId,
-    });
+    const session = await Session.create({ problem, difficulty, host: userId, callId });
 
     // create stream video call
     await streamClient.video.call("default", callId).getOrCreate({
@@ -54,6 +45,7 @@ export async function getActiveSessions(_, res) {
   try {
     const sessions = await Session.find({ status: "active" })
       .populate("host", "name profileImage email clerkId")
+      .populate("participant", "name profileImage email clerkId")
       .sort({ createdAt: -1 })
       .limit(20);
 
@@ -68,7 +60,7 @@ export async function getMyRecentSessions(req, res) {
   try {
     const userId = req.user._id;
 
-    // get session where user is either host or participant
+    // get sessions where user is either host or participant
     const sessions = await Session.find({
       status: "completed",
       $or: [{ host: userId }, { participant: userId }],
@@ -111,20 +103,15 @@ export async function joinSession(req, res) {
     if (!session) return res.status(404).json({ message: "Session not found" });
 
     if (session.status !== "active") {
-      return res
-        .status(400)
-        .json({ message: "Cannot join a completed session" });
+      return res.status(400).json({ message: "Cannot join a completed session" });
     }
 
     if (session.host.toString() === userId.toString()) {
-      return res
-        .status(400)
-        .json({ message: "Host cannot join thier session as participant" });
+      return res.status(400).json({ message: "Host cannot join their own session as participant" });
     }
 
     // check if session is already full - has a participant
-    if (session.participant)
-      return res.status(409).json({ message: "Session is full" });
+    if (session.participant) return res.status(409).json({ message: "Session is full" });
 
     session.participant = userId;
     await session.save();
@@ -148,14 +135,12 @@ export async function endSession(req, res) {
 
     if (!session) return res.status(404).json({ message: "Session not found" });
 
-    // check if the user is host
+    // check if user is the host
     if (session.host.toString() !== userId.toString()) {
-      return res
-        .status(403)
-        .json({ message: "Only the host can end the session" });
+      return res.status(403).json({ message: "Only the host can end the session" });
     }
 
-    // check if the session is already completed
+    // check if session is already completed
     if (session.status === "completed") {
       return res.status(400).json({ message: "Session is already completed" });
     }
@@ -169,9 +154,9 @@ export async function endSession(req, res) {
     await channel.delete();
 
     session.status = "completed";
-    await session.save(); 
+    await session.save();
 
-    res.status(200).json({ message: "Session ended successfully" });
+    res.status(200).json({ session, message: "Session ended successfully" });
   } catch (error) {
     console.log("Error in endSession controller:", error.message);
     res.status(500).json({ message: "Internal Server Error" });
