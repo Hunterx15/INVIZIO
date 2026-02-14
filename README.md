@@ -43,7 +43,7 @@ From scheduling meetings to hosting interview sessions with real-time features, 
 
 ## 🚀 Live Demo
 
-👉 **Production URL:** https://invizio-uvcd8.sevalla.app
+👉 **Production URL:** https://invizio-jzbi.onrender.com
 
 ---
 
@@ -115,7 +115,7 @@ INVIZIO/
 ## 🚀 Deployment
 
 Deploy using:
-- Sevalla
+
 
 Build:
 ```bash
