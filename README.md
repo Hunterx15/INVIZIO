@@ -115,7 +115,7 @@ INVIZIO/
 ## 🚀 Deployment
 
 Deploy using:
-
+- Render
 
 Build:
 ```bash
